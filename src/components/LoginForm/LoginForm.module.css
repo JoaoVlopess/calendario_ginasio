@@ -1,0 +1,51 @@
+/* LoginForm.module.css */
+.login_area_input {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.login_area_input input {
+  border: 2px solid #2c2c2e;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.login_area_input input::placeholder {
+  color: #a0a0a0;
+}
+
+.login_area_input input:focus {
+  border-color: #666;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
+}
+
+.signin_button {
+  background-color: #044cf4;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+  border: 1px solid #000;
+  width: 100%;
+  max-width: 320px;
+  align-self: center;
+  text-align: center;
+}
+
+.signin_button:hover {
+  background-color: transparent;
+  color: #000000;
+  border: 1px solid #000;
+}

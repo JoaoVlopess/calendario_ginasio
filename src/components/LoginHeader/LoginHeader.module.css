@@ -1,0 +1,31 @@
+/* LoginHeader.module.css */
+.login_area {
+  max-width: 700px;
+  max-height: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+}
+
+.name {
+  font-size: 2.5rem;
+  color: #044cf4;
+  margin-bottom: 1rem;
+}
+
+.login_area_cadastro {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.login_area_cadastro p {
+  color: black;
+  cursor: default;
+}
+
+.login_area_cadastro a {
+  color: #777;
+  text-decoration: underline;
+}
