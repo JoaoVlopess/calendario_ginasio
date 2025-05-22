@@ -18,6 +18,7 @@ export const LoginPage = () => {
             <div className={styles.cadastro_mensage}>
               <p>Não tem uma conta?</p>
               <Link to="/cadastro">Cadastre-se!</Link>
+            
             </div>
           </div>
         </div>

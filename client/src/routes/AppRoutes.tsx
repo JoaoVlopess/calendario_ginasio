@@ -11,17 +11,4 @@ export default function AppRoutes() {
     { path: '/home',     element: <CalendarioPage /> }
   ]
 )
-
-//     {
-//       path: '/curso/:cursoId',
-//       element: <CursoLayout />,
-//       children: [
-//         { path: 'aula/:aulaId', element: <AulaPage /> },
-//         { index: true, element: <Navigate to="aula/1" replace /> }
-//         //essa rota será acionada quando o usuário acessar exatamente o caminho da rota pai
-//       ]
-//     },
-
-//     { path: '*', element: <NotFoundPage /> }
-//   ]);
-}
+};
