@@ -1,0 +1,32 @@
+.eventoCard {
+  padding: 6px;
+  margin: 2px 0;
+  border-radius: 4px;
+  background-color: #e0f7fa; /* Cor padrão, pode ser sobrescrita pela prop 'cor' do evento */
+  color: #004d40;
+  font-size: 0.75em;
+  overflow: hidden;
+  border: 1px solid #b2dfdb;
+  cursor: default;
+}
+
+.eventoCard:hover {
+  opacity: 0.9;
+}
+
+.eventoNome {
+  font-weight: bold;
+  margin: 0 0 3px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eventoHorario,
+.eventoLocal {
+  margin: 0 0 2px 0;
+  font-size: 0.9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
