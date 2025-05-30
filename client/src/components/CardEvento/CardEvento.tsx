@@ -1,6 +1,6 @@
 // src/components/EventoCard/EventoCard.tsx
 import React from 'react';
-import styles from './EventoCard.module.css';
+import styles from './CardEvento.module.css';
 import type { Evento } from '../../types/evento'; // Usando type-only import
 
 type EventoCardProps = {

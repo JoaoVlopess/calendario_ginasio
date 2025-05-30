@@ -54,18 +54,41 @@ const getPeriodoDoDia = (timeSlot: string): string => {
   return 'NOITE';
 };
 
-const getBlocoHorario = (timeSlot: string): string | null => {
-  const slotTime = timeToMinutes(timeSlot);
+// Define block structures with their intended period and time ranges
+interface BlocoConfig {
+  label: string;
+  intendedPeriodo: 'MANHÃ' | 'TARDE' | 'NOITE';
+  startMinutes: number;
+  endMinutes: number; // Exclusive
+}
+
+// These definitions reflect the *original intent* of the blocks including their full duration
+// and the period they are primarily associated with.
+const ALL_BLOCO_CONFIGS: BlocoConfig[] = [
   // MANHÃ
-  if (slotTime >= timeToMinutes("07:30") && slotTime < timeToMinutes("09:00")) return "AB";
-  if (slotTime >= timeToMinutes("09:00") && slotTime < timeToMinutes("11:00")) return "CD";
-  if (slotTime >= timeToMinutes("11:00") && slotTime < timeToMinutes("12:00")) return "EF";
-  // TARDE (exemplo)
-  if (slotTime >= timeToMinutes("13:30") && slotTime < timeToMinutes("15:00")) return "GH";
-  if (slotTime >= timeToMinutes("15:00") && slotTime < timeToMinutes("17:00")) return "IJ";
-  // NOITE (exemplo)
-  if (slotTime >= timeToMinutes("18:30") && slotTime < timeToMinutes("20:00")) return "KL";
-  return null;
+  { label: "AB", intendedPeriodo: "MANHÃ", startMinutes: timeToMinutes("07:30"), endMinutes: timeToMinutes("09:10") },
+  { label: "CD", intendedPeriodo: "MANHÃ", startMinutes: timeToMinutes("09:30"), endMinutes: timeToMinutes("11:10") },
+  { label: "EF", intendedPeriodo: "MANHÃ", startMinutes: timeToMinutes("11:20"), endMinutes: timeToMinutes("13:00") },
+  // TARDE
+  { label: "AB", intendedPeriodo: "TARDE", startMinutes: timeToMinutes("13:30"), endMinutes: timeToMinutes("15:10") },
+  { label: "CD", intendedPeriodo: "TARDE", startMinutes: timeToMinutes("15:30"), endMinutes: timeToMinutes("17:10") },
+  { label: "EF", intendedPeriodo: "TARDE", startMinutes: timeToMinutes("17:20"), endMinutes: timeToMinutes("19:00") },
+  // NOITE
+  { label: "AB", intendedPeriodo: "NOITE", startMinutes: timeToMinutes("19:00"), endMinutes: timeToMinutes("20:40") },
+  { label: "CD", intendedPeriodo: "NOITE", startMinutes: timeToMinutes("21:00"), endMinutes: timeToMinutes("22:40") },
+];
+
+const getBlocoHorario = (timeSlot: string): string | null => {
+  const slotTimeMinutes = timeToMinutes(timeSlot);
+  const slotPeriodo = getPeriodoDoDia(timeSlot); // Determine the actual period of the timeSlot
+
+  for (const bloco of ALL_BLOCO_CONFIGS) {
+    if (slotTimeMinutes >= bloco.startMinutes && slotTimeMinutes < bloco.endMinutes) {
+      // Only return the block label if its intended period matches the slot's actual period.
+      return bloco.intendedPeriodo === slotPeriodo ? bloco.label : null;
+    }
+  }
+  return null; // No block matched for this slot's period and time
 };
 
 type RowItem = 
@@ -102,7 +125,7 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({ eventos, semana
 
   TIME_SLOTS.forEach((slot, index) => {
     const currentPeriodo = getPeriodoDoDia(slot);
-    const currentBloco = getBlocoHorario(slot);
+    // const slotTimeMinutes = timeToMinutes(slot); // Not directly needed here for block header logic anymore
 
     if (currentPeriodo && currentPeriodo !== lastEmittedPeriodo) {
       gridRows.push({ type: 'periodo', label: currentPeriodo, key: `periodo-${currentPeriodo}-${index}` });
@@ -110,14 +133,23 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({ eventos, semana
       lastEmittedBloco = null; // Reseta o bloco ao mudar o período
     }
 
-    if (currentBloco && currentBloco !== lastEmittedBloco && currentPeriodo === lastEmittedPeriodo) {
-      gridRows.push({ type: 'bloco', label: currentBloco, key: `bloco-${currentBloco}-${index}` });
-      lastEmittedBloco = currentBloco;
+    // Determine the block label for the current slot using the existing helper.
+    // getBlocoHorario already ensures the block's intendedPeriodo matches the slot's actual periodo.
+    const blocoLabelForThisSlot = getBlocoHorario(slot);
+
+    if (blocoLabelForThisSlot && blocoLabelForThisSlot !== lastEmittedBloco) {
+      // If this slot falls into a new block (different from the last emitted one for this period),
+      // emit the block header.
+      gridRows.push({ 
+        type: 'bloco', 
+        label: blocoLabelForThisSlot,
+        key: `bloco-${blocoLabelForThisSlot}-${currentPeriodo}-${index}`
+      });
+      lastEmittedBloco = blocoLabelForThisSlot;
     }
     
     gridRows.push({ type: 'slot', time: slot, key: `slot-${slot}-${index}` });
   });
-
   return (
     <div className={styles.gridContainer}>
       {/* Cabeçalho Fixo */}
