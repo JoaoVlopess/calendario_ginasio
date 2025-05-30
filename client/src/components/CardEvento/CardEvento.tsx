@@ -9,11 +9,11 @@ type EventoCardProps = {
 
 export const CardEvento: React.FC<EventoCardProps> = ({ evento }) => {
   return (
-    <div className={styles.eventoCard} style={{ backgroundColor: evento.cor || '#add8e6' }} title={evento.descricao || evento.nome}>
-      <h5 className={styles.eventoNome}>{evento.nome}</h5>
+    <div className={styles.eventoCard} style={{ backgroundColor: evento.cor || '#add8e6' }} title={evento.descricao || evento.titulo}>
+      <h5 className={styles.eventoNome}>{evento.titulo}</h5>
       <p className={styles.eventoHorario}>{evento.horaInicio} - {evento.horaFim}</p>
       {evento.local && <p className={styles.eventoLocal}>{evento.local}</p>}
-      {/* <p>Responsável: {evento.responsavel || 'N/A'}</p> */}
+      <p  className={styles.eventoResponsavel} >Responsável: {evento.responsavel || 'N/A'}</p>
     </div>
   );
 };

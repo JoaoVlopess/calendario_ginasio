@@ -23,6 +23,7 @@
 }
 
 .eventoHorario,
+.eventoResponsavel,
 .eventoLocal {
   margin: 0 0 2px 0;
   font-size: 0.9em;

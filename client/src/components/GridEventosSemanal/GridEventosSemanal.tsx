@@ -26,75 +26,70 @@ const timeToMinutes = (timeStr: string): number => {
   return hours * 60 + minutes;
 };
 
-// Helper para gerar slots de tempo (ex: 07:00, 07:30, ..., 22:30)
-const generateTimeSlots = (startHour: number, endHour: number, intervalMinutes: number): string[] => {
-  const slots: string[] = [];
-  for (let h = startHour; h < endHour; h++) {
-    for (let m = 0; m < 60; m += intervalMinutes) {
-      slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
-    }
-  }
-  // Adiciona o último slot se for exatamente endHour:00
-  if (endHour * 60 % intervalMinutes === 0 && !slots.includes(`${endHour.toString().padStart(2, '0')}:00`)) {
-     // slots.push(`${endHour.toString().padStart(2, '0')}:00`); // Decide if you need up to 23:00 or 22:30
-  }
-  return slots;
-};
-
-const TIME_SLOTS = generateTimeSlots(7, 23, 30); // De 07:00 até 22:30
-
 const formatDateHeader = (date: Date): string => {
-  return date.getDate().toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // getMonth() é 0-indexado
+  return `${day}/${month}`;
 };
 
-const getPeriodoDoDia = (timeSlot: string): string => {
-  const hour = parseInt(timeSlot.split(':')[0], 10);
-  if (hour < 12) return 'MANHÃ';
-  if (hour < 18) return 'TARDE';
-  return 'NOITE';
-};
+// Interface for the sub-slots within each Bloco
+interface SubSlot {
+  label: string; // e.g., "07:30 - 08:20"
+  startMinutes: number;
+  endMinutes: number;
+}
 
 // Define block structures with their intended period and time ranges
-interface BlocoConfig {
+type BlocoConfig = {
   label: string;
   intendedPeriodo: 'MANHÃ' | 'TARDE' | 'NOITE';
-  startMinutes: number;
-  endMinutes: number; // Exclusive
+  subSlots: SubSlot[];
 }
 
 // These definitions reflect the *original intent* of the blocks including their full duration
 // and the period they are primarily associated with.
 const ALL_BLOCO_CONFIGS: BlocoConfig[] = [
   // MANHÃ
-  { label: "AB", intendedPeriodo: "MANHÃ", startMinutes: timeToMinutes("07:30"), endMinutes: timeToMinutes("09:10") },
-  { label: "CD", intendedPeriodo: "MANHÃ", startMinutes: timeToMinutes("09:30"), endMinutes: timeToMinutes("11:10") },
-  { label: "EF", intendedPeriodo: "MANHÃ", startMinutes: timeToMinutes("11:20"), endMinutes: timeToMinutes("13:00") },
+  { label: "AB", intendedPeriodo: "MANHÃ", subSlots: [
+    { label: "07:30", startMinutes: timeToMinutes("07:30"), endMinutes: timeToMinutes("08:20") },
+    { label: "08:20", startMinutes: timeToMinutes("08:20"), endMinutes: timeToMinutes("09:10") },
+  ]},
+  { label: "CD", intendedPeriodo: "MANHÃ", subSlots: [
+    { label: "09:30", startMinutes: timeToMinutes("09:30"), endMinutes: timeToMinutes("10:20") },
+    { label: "10:20", startMinutes: timeToMinutes("10:20"), endMinutes: timeToMinutes("11:10") },
+  ]},
+  { label: "EF", intendedPeriodo: "MANHÃ", subSlots: [
+    { label: "11:20", startMinutes: timeToMinutes("11:20"), endMinutes: timeToMinutes("12:10") },
+    { label: "12:10", startMinutes: timeToMinutes("12:10"), endMinutes: timeToMinutes("13:00") },
+  ]},
   // TARDE
-  { label: "AB", intendedPeriodo: "TARDE", startMinutes: timeToMinutes("13:30"), endMinutes: timeToMinutes("15:10") },
-  { label: "CD", intendedPeriodo: "TARDE", startMinutes: timeToMinutes("15:30"), endMinutes: timeToMinutes("17:10") },
-  { label: "EF", intendedPeriodo: "TARDE", startMinutes: timeToMinutes("17:20"), endMinutes: timeToMinutes("19:00") },
+  { label: "AB", intendedPeriodo: "TARDE", subSlots: [
+    { label: "13:30", startMinutes: timeToMinutes("13:30"), endMinutes: timeToMinutes("14:20") },
+    { label: "14:20", startMinutes: timeToMinutes("14:20"), endMinutes: timeToMinutes("15:10") },
+  ]},
+  { label: "CD", intendedPeriodo: "TARDE", subSlots: [
+    { label: "15:30", startMinutes: timeToMinutes("15:30"), endMinutes: timeToMinutes("16:20") },
+    { label: "16:20", startMinutes: timeToMinutes("16:20"), endMinutes: timeToMinutes("17:10") },
+  ]},
+  { label: "EF", intendedPeriodo: "TARDE", subSlots: [
+    { label: "17:20", startMinutes: timeToMinutes("17:20"), endMinutes: timeToMinutes("18:10") },
+    { label: "18:10", startMinutes: timeToMinutes("18:10"), endMinutes: timeToMinutes("19:00") },
+  ]},
   // NOITE
-  { label: "AB", intendedPeriodo: "NOITE", startMinutes: timeToMinutes("19:00"), endMinutes: timeToMinutes("20:40") },
-  { label: "CD", intendedPeriodo: "NOITE", startMinutes: timeToMinutes("21:00"), endMinutes: timeToMinutes("22:40") },
+  { label: "AB", intendedPeriodo: "NOITE", subSlots: [
+    { label: "19:00", startMinutes: timeToMinutes("19:00"), endMinutes: timeToMinutes("19:50") },
+    { label: "19:50", startMinutes: timeToMinutes("19:50"), endMinutes: timeToMinutes("20:40") },
+  ]},
+  { label: "CD", intendedPeriodo: "NOITE", subSlots: [
+    { label: "21:00", startMinutes: timeToMinutes("21:00"), endMinutes: timeToMinutes("21:50") },
+    { label: "21:50", startMinutes: timeToMinutes("21:50"), endMinutes: timeToMinutes("22:40") },
+  ]},
 ];
-
-const getBlocoHorario = (timeSlot: string): string | null => {
-  const slotTimeMinutes = timeToMinutes(timeSlot);
-  const slotPeriodo = getPeriodoDoDia(timeSlot); // Determine the actual period of the timeSlot
-
-  for (const bloco of ALL_BLOCO_CONFIGS) {
-    if (slotTimeMinutes >= bloco.startMinutes && slotTimeMinutes < bloco.endMinutes) {
-      // Only return the block label if its intended period matches the slot's actual period.
-      return bloco.intendedPeriodo === slotPeriodo ? bloco.label : null;
-    }
-  }
-  return null; // No block matched for this slot's period and time
-};
 
 type RowItem = 
   | { type: 'periodo'; label: string; key: string }
   | { type: 'bloco'; label: string; key: string }
-  | { type: 'slot'; time: string; key: string };
+  | { type: 'slot'; subSlot: SubSlot; key: string };
 
 const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({ eventos, semana }) => {
   if (semana.length !== 7) {
@@ -102,14 +97,13 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({ eventos, semana
     return <div className={styles.errorLoading}>Erro ao carregar calendário: dados da semana inválidos.</div>;
   }
 
-  const getEventosParaSlot = (dia: DiaDaSemana, timeSlot: string): Evento[] => {
+  const getEventosParaSubSlot = (dia: DiaDaSemana, subSlot: SubSlot): Evento[] => {
     return eventos.filter(evento => {
       if (!evento.diasDaSemana.includes(dia)) {
         return false;
       }
-      const slotStartTimeMinutes = timeToMinutes(timeSlot);
-      const slotEndTimeMinutes = slotStartTimeMinutes + 30; // Assumindo slots de 30 min
-
+      const slotStartTimeMinutes = subSlot.startMinutes;
+      const slotEndTimeMinutes = subSlot.endMinutes;
       const eventStartTimeMinutes = timeToMinutes(evento.horaInicio);
       const eventEndTimeMinutes = timeToMinutes(evento.horaFim);
 
@@ -121,34 +115,27 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({ eventos, semana
   
   const gridRows: RowItem[] = [];
   let lastEmittedPeriodo: string | null = null;
-  let lastEmittedBloco: string | null = null;
 
-  TIME_SLOTS.forEach((slot, index) => {
-    const currentPeriodo = getPeriodoDoDia(slot);
-    // const slotTimeMinutes = timeToMinutes(slot); // Not directly needed here for block header logic anymore
-
-    if (currentPeriodo && currentPeriodo !== lastEmittedPeriodo) {
-      gridRows.push({ type: 'periodo', label: currentPeriodo, key: `periodo-${currentPeriodo}-${index}` });
-      lastEmittedPeriodo = currentPeriodo;
-      lastEmittedBloco = null; // Reseta o bloco ao mudar o período
-    }
-
-    // Determine the block label for the current slot using the existing helper.
-    // getBlocoHorario already ensures the block's intendedPeriodo matches the slot's actual periodo.
-    const blocoLabelForThisSlot = getBlocoHorario(slot);
-
-    if (blocoLabelForThisSlot && blocoLabelForThisSlot !== lastEmittedBloco) {
-      // If this slot falls into a new block (different from the last emitted one for this period),
-      // emit the block header.
+  ALL_BLOCO_CONFIGS.forEach((bloco, blocoIndex) => {
+    // Emit Periodo Header if it's new
+    if (bloco.intendedPeriodo !== lastEmittedPeriodo) {
       gridRows.push({ 
-        type: 'bloco', 
-        label: blocoLabelForThisSlot,
-        key: `bloco-${blocoLabelForThisSlot}-${currentPeriodo}-${index}`
+        type: 'periodo', 
+        label: bloco.intendedPeriodo, 
+        key: `periodo-${bloco.intendedPeriodo}-${blocoIndex}` 
       });
-      lastEmittedBloco = blocoLabelForThisSlot;
+      lastEmittedPeriodo = bloco.intendedPeriodo;
     }
-    
-    gridRows.push({ type: 'slot', time: slot, key: `slot-${slot}-${index}` });
+
+    // Emit Bloco Header
+    gridRows.push({ type: 'bloco', label: bloco.label, key: `bloco-${bloco.label}-${bloco.intendedPeriodo}-${blocoIndex}` });
+
+    // Emit SubSlots for this Bloco
+    bloco.subSlots.forEach((subSlot, subSlotIndex) => {
+      gridRows.push({ 
+        type: 'slot', subSlot: subSlot, key: `slot-${bloco.label}-${bloco.intendedPeriodo}-${blocoIndex}-${subSlotIndex}`
+      });
+    });
   });
   return (
     <div className={styles.gridContainer}>
@@ -179,11 +166,11 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({ eventos, semana
         if (rowItem.type === 'slot') {
           return (
             <React.Fragment key={rowItem.key}>
-              <div className={`${styles.timeSlotCell} ${styles.stickyHeaderCol}`}>{rowItem.time}</div>
+              <div className={`${styles.timeSlotCell} ${styles.stickyHeaderCol}`}>{rowItem.subSlot.label}</div>
               {DIAS_DA_SEMANA_ORDEM.map((diaNome) => {
-                const eventosNoSlot = getEventosParaSlot(diaNome, rowItem.time!);
+                const eventosNoSlot = getEventosParaSubSlot(diaNome, rowItem.subSlot);
                 return (
-                  <div key={`${diaNome}-${rowItem.time}`} className={styles.gridCell}>
+                  <div key={`${diaNome}-${rowItem.subSlot.label}`} className={styles.gridCell}>
                     {eventosNoSlot.map(evento => (
                       <CardEvento key={evento.id} evento={evento} />
                     ))}
