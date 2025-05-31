@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import GridEventosSemanal from "../../components/GridEventosSemanal/GridEventosSemanal";
 import type { Evento } from '../../types/evento'; // Importe o tipo Evento
+import Navbar from "../../components/Navbar/Navbar";
 
 // Função para gerar as datas da semana atual (exemplo simples)
 const getSemanaAtual = (): Date[] => {
@@ -44,6 +45,7 @@ export const CalendarioPage = () => {
 
   return (
     <div className="">
+      <Navbar />
       <GridEventosSemanal eventos={eventos} semana={semanaAtual} />
     </div>
   );

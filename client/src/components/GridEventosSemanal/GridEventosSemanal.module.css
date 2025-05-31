@@ -1,112 +1,129 @@
 /* c:/Users/User/Desktop/Facul/calendario_ginasio/client/src/components/EventosGridSemanal/EventosGridSemanal.module.css */
+/* ... (outros estilos que você já tem) ... */
+
 .gridContainer {
   display: grid;
   grid-template-columns: 90px repeat(7, 1fr); /* Coluna de horário + 7 dias */
-  border: 1px solid #b0bec5;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 20px auto;
   max-width: 1200px; /* Ou o que for adequado */
   background-color: #fff;
   position: relative; /* Para headers fixos */
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e0e0;
 }
 
 .headerCell,
 .timeSlotCell,
 .gridCell,
-.periodoHeaderCell,
+.periodoHeaderCell, /* Removido daqui e estilizado especificamente abaixo para cor de fundo */
 .blocoHeaderCell {
   border-right: 1px solid #eceff1;
   border-bottom: 1px solid #eceff1;
   padding: 8px;
   text-align: center;
-  min-height: 45px; /* Altura mínima para células de evento */
+  min-height: 45px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
 }
-.gridContainer > div:last-child { /* Remove right border from last column cells */
-   /* border-right: none; */ /* This applies to the last logical cell, not visually */
-}
-.gridContainer > div:nth-child(8n) { /* Target cells in the last day column */
+
+/* Remove a borda direita da última coluna de células da grade principal (dias) */
+.gridContainer > *:not(.periodoHeaderCell):not(.blocoHeaderCell):nth-child(8n) {
   border-right: none;
 }
+/* Remove a borda direita da célula de cabeçalho da última coluna de dia */
+.gridContainer > .headerCell:nth-child(8) {
+    border-right: none;
+}
 
 
-.headerCell {
-  background-color: #f5f5f5;
+.headerCell { /* Estilo para os dias da semana (SEGUNDA, TERÇA, etc.) */
+  background-color: #f8f9fa;
   font-weight: 600;
-  color: #37474f;
-  font-size: 0.9em;
+  color: #495057;
+  font-size: 0.85em;
   text-transform: uppercase;
-  position: sticky; /* Para fixar cabeçalhos */
+  position: sticky;
   z-index: 2;
 }
 
 .stickyHeaderRow {
-  top: 0; /* Fixa o cabeçalho dos dias no topo */
+  top: 0;
 }
 
-.stickyHeaderCol {
-  left: 0; /* Fixa o cabeçalho dos horários à esquerda */
-  z-index: 3; /* Acima do header dos dias */
-  background-color: #f9f9f9; /* Para não ficar transparente sobre os eventos */
+.stickyHeaderCol { /* Estilo para a coluna de horários (07:30, 08:20, etc.) */
+  left: 0;
+  z-index: 3;
+  background-color: #fdfdfd;
 }
-.headerCell.stickyHeaderCol { /* Canto superior esquerdo */
-    z-index: 4;
-    background-color: #e0e0e0;
+
+/* Célula do canto superior esquerdo - HORÁRIO */
+.headerCell.stickyHeaderCol {
+  z-index: 4;
+  background-color: #084cf4; /* <<< COR DA NAVBAR APLICADA AQUI */
+  color: white;              /* <<< TEXTO BRANCO PARA CONTRASTE */
+  /* As bordas podem precisar de ajuste se não parecerem bem com o fundo azul */
+  border-bottom: 1px solid #003bb5; /* Exemplo: borda um pouco mais escura que o fundo azul */
+  border-right: 1px solid #003bb5;  /* Exemplo: borda um pouco mais escura que o fundo azul */
 }
 
 
 .timeSlotCell {
-  background-color: #fafafa;
-  font-size: 0.85em;
-  color: #546e7a;
+  background-color: #fff;
+  font-size: 0.8em;
+  color: #6c757d;
   font-weight: 500;
 }
+.timeSlotCell.stickyHeaderCol { /* Coluna de horários (07:30, 08:20 etc.) mantendo o fundo claro */
+    background-color: #fdfdfd; /* Mantém o fundo claro para os horários */
+    color: #6c757d; /* Mantém a cor do texto dos horários */
+}
+
 
 .gridCell {
   flex-direction: column;
-  align-items: stretch; /* Faz os EventoCard preencherem a largura */
-  justify-content: flex-start; /* Alinha os cards no topo */
+  align-items: stretch;
+  justify-content: flex-start;
   padding: 4px;
-  gap: 2px; /* Espaço entre cards no mesmo slot */
-  overflow-y: auto; /* Se muitos eventos no mesmo slot */
+  gap: 3px;
+  overflow-y: auto;
   min-height: 50px;
+  background-color: #fff;
 }
 
-.periodoHeaderCell,
-.blocoHeaderCell {
-  grid-column: 1 / -1; /* Faz o header ocupar todas as colunas */
-  background-color: #eceff1;
-  font-weight: bold;
+/* Headers de Período (MANHÃ, TARDE, NOITE) */
+.periodoHeaderCell {
+  grid-column: 1 / -1;
   text-align: left;
   padding-left: 15px;
-  color: #263238;
-  border-top: 2px solid #cfd8dc;
-  justify-content: flex-start; /* Alinha texto à esquerda */
+  justify-content: flex-start;
+  font-size: 1em;
+  font-weight: 600;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-color: #084cf4; /* <<< COR DA NAVBAR APLICADA AQUI */
+  color: white;              /* <<< TEXTO BRANCO PARA CONTRASTE */
+  border-top: 1px solid #003bb5;    /* Exemplo: borda um pouco mais escura */
+  /* border-bottom já é aplicado pela regra geral, mas pode ser ajustada se necessário */
+  border-right: none; /* Garante que não haja borda direita, pois ocupa a linha toda */
 }
 
-.periodoHeaderCell {
-  font-size: 1.1em;
-  background-color: #e0e0e0; /* Um pouco mais escuro para Período */
-}
-
-.blocoHeaderCell {
-  font-size: 0.95em;
-  font-style: italic;
-  background-color: #f0f0f0; /* Um pouco mais claro para Bloco */
+.blocoHeaderCell { /* Headers de Bloco (AB, CD, EF) */
+  grid-column: 1 / -1;
+  text-align: left;
   padding-left: 25px;
-  border-top: 1px dashed #cfd8dc;
+  justify-content: flex-start;
+  font-size: 0.9em;
+  font-style: normal;
+  background-color: #f8f9fa;
+  border-top: 1px dashed #e0e0e0;
+  color: #495057;
+  font-weight: 500;
+  border-right: none; /* Garante que não haja borda direita */
 }
 
-.fullRow {
-  /* Assegura que o grid-column funcione */
-}
-
-.errorLoading {
-  color: red;
-  padding: 20px;
-  text-align: center;
-  font-size: 1.2em;
-}
+/* ... (restante do seu CSS, como .fullRow, .errorLoading) ... */
