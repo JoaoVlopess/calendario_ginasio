@@ -1,5 +1,13 @@
+// tsconfig.json (raiz)
 {
   "files": [],
+  // Opção para silenciar o linter para este arquivo específico
+  "compilerOptions": {
+    "strict": true,
+    "forceConsistentCasingInFileNames": true
+    // Você pode precisar adicionar outras opções básicas aqui se o linter
+    // for muito exigente sobre o arquivo raiz, como "esModuleInterop": true
+  },
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }

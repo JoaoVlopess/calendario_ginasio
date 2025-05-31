@@ -17,6 +17,7 @@
 
     /* Linting */
     "strict": true,
+    "forceConsistentCasingInFileNames": true, // <-- ADICIONE ESTA LINHA
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,

@@ -1,6 +1,6 @@
 import { useRoutes } from "react-router";
 import { CadastroPage } from "../pages/CadastroPage/CadastroPage";
-import { CalendarioPage } from "../pages/CalendarioPage/calendarioPage";
+import { CalendarioPage } from "../pages/CalendarioPage/CalendarioPage";
 import { LoginPage } from "../pages/LoginPage/LoginPage";
 
 export default function AppRoutes() {

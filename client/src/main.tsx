@@ -3,9 +3,11 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import App from './App';
 import './index.css';
+import Navbar from './components/Navbar/Navbar';
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
+    <Navbar />
     <BrowserRouter>
       <App />
     </BrowserRouter>
