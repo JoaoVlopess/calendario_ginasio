@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import GridEventosSemanal from "../../components/GridEventosSemanal/GridEventosSemanal";
 import type { Evento } from '../../types/evento'; // Importe o tipo Evento
 import Navbar from "../../components/Navbar/Navbar";
+import { EditarEventoModal } from '../../components/EditarEvento/EditarEvento'; // 1. Importar o modal
 
 // Função para gerar as datas da semana atual (exemplo simples)
 const getSemanaAtual = (): Date[] => {
@@ -32,6 +33,10 @@ export const CalendarioPage = () => {
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [semanaAtual, setSemanaAtual] = useState<Date[]>(getSemanaAtual());
 
+  // 2. Estados para o modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [eventoSelecionado, setEventoSelecionado] = useState<Evento | null>(null);
+
   useEffect(() => {
     // Aqui você buscaria seus eventos de uma API ou fonte de dados
     // Por enquanto, vamos usar dados mock:
@@ -43,10 +48,51 @@ export const CalendarioPage = () => {
     setEventos(eventosMock);
   }, []); // O array vazio como segundo argumento faz o useEffect rodar apenas uma vez, após a montagem inicial
 
+  // 3. Funções de handler para o modal
+  const handleAbrirModal = (evento: Evento) => {
+    setEventoSelecionado(evento);
+    setIsModalOpen(true);
+  };
+
+  const handleFecharModal = () => {
+    setIsModalOpen(false);
+    setEventoSelecionado(null); // Limpa o evento selecionado ao fechar
+  };
+
+  const handleSalvarEvento = (eventoAtualizado: Evento) => {
+    setEventos(prevEventos =>
+      prevEventos.map(ev => (ev.id === eventoAtualizado.id ? eventoAtualizado : ev))
+    );
+    // Adicionar aqui a lógica para persistir a alteração (ex: chamada de API)
+    console.log('Evento salvo:', eventoAtualizado);
+    handleFecharModal();
+  };
+
+  const handleDeletarEvento = (eventoId: string) => {
+    setEventos(prevEventos => prevEventos.filter(ev => ev.id !== eventoId));
+    // Adicionar aqui a lógica para persistir a exclusão (ex: chamada de API)
+    console.log('Evento deletado:', eventoId);
+    handleFecharModal();
+  };
+
   return (
-    <div className="">
+    <div className=""> {/* Considere usar styles.container se tiver CSS Modules */}
       <Navbar />
-      <GridEventosSemanal eventos={eventos} semana={semanaAtual} />
+      <GridEventosSemanal
+        eventos={eventos}
+        semana={semanaAtual}
+        onAbrirModalEditar={handleAbrirModal} // 4. Passar a função para abrir o modal
+      />
+      {/* 5. Renderizar o EditarEventoModal condicionalmente */}
+      {isModalOpen && eventoSelecionado && (
+        <EditarEventoModal
+          evento={eventoSelecionado}
+          isOpen={isModalOpen}
+          onClose={handleFecharModal}
+          onSave={handleSalvarEvento}
+          onDelete={handleDeletarEvento}
+        />
+      )}
     </div>
   );
 };

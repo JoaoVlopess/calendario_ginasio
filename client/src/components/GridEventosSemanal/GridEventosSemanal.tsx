@@ -1,12 +1,13 @@
 // c:/Users/User/Desktop/Facul/calendario_ginasio/client/src/components/EventosGridSemanal/EventosGridSemanal.tsx
 import React from 'react';
 import type { Evento, DiaDaSemana } from '../../types/evento';
-import { CardEvento } from '../CardEvento/CardEvento'; // Alterado para importação nomeada
+import { CardEvento } from '../CardEvento/CardEvento';
 import styles from './GridEventosSemanal.module.css';
 
 interface EventosGridSemanalProps {
   eventos: Evento[];
   semana: Date[]; // Array de 7 Date objects, de segunda a domingo para a semana atual
+  onAbrirModalEditar: (evento: Evento) => void; // <<< ADICIONADA A PROP AQUI
 }
 
 const DIAS_DA_SEMANA_ORDEM: DiaDaSemana[] = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'];
@@ -46,8 +47,6 @@ type BlocoConfig = {
   subSlots: SubSlot[];
 }
 
-// These definitions reflect the *original intent* of the blocks including their full duration
-// and the period they are primarily associated with.
 const ALL_BLOCO_CONFIGS: BlocoConfig[] = [
   // MANHÃ
   { label: "AB", intendedPeriodo: "MANHÃ", subSlots: [
@@ -86,12 +85,16 @@ const ALL_BLOCO_CONFIGS: BlocoConfig[] = [
   ]},
 ];
 
-type RowItem = 
+type RowItem =
   | { type: 'periodo'; label: string; key: string }
   | { type: 'bloco'; label: string; key: string }
   | { type: 'slot'; subSlot: SubSlot; key: string };
 
-const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({ eventos, semana }) => {
+const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({
+  eventos,
+  semana,
+  onAbrirModalEditar, // <<< PROP RECEBIDA AQUI
+}) => {
   if (semana.length !== 7) {
     console.error("A propriedade 'semana' deve conter exatamente 7 objetos Date.");
     return <div className={styles.errorLoading}>Erro ao carregar calendário: dados da semana inválidos.</div>;
@@ -107,36 +110,30 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({ eventos, semana
       const eventStartTimeMinutes = timeToMinutes(evento.horaInicio);
       const eventEndTimeMinutes = timeToMinutes(evento.horaFim);
 
-      // Evento sobrepõe o slot se:
-      // (início do evento < fim do slot) E (fim do evento > início do slot)
       return eventStartTimeMinutes < slotEndTimeMinutes && eventEndTimeMinutes > slotStartTimeMinutes;
     });
   };
-  
+
   const gridRows: RowItem[] = [];
   let lastEmittedPeriodo: string | null = null;
 
   ALL_BLOCO_CONFIGS.forEach((bloco, blocoIndex) => {
-    // Emit Periodo Header if it's new
     if (bloco.intendedPeriodo !== lastEmittedPeriodo) {
-      gridRows.push({ 
-        type: 'periodo', 
-        label: bloco.intendedPeriodo, 
-        key: `periodo-${bloco.intendedPeriodo}-${blocoIndex}` 
+      gridRows.push({
+        type: 'periodo',
+        label: bloco.intendedPeriodo,
+        key: `periodo-${bloco.intendedPeriodo}-${blocoIndex}`
       });
       lastEmittedPeriodo = bloco.intendedPeriodo;
     }
-
-    // Emit Bloco Header
     gridRows.push({ type: 'bloco', label: bloco.label, key: `bloco-${bloco.label}-${bloco.intendedPeriodo}-${blocoIndex}` });
-
-    // Emit SubSlots for this Bloco
     bloco.subSlots.forEach((subSlot, subSlotIndex) => {
-      gridRows.push({ 
+      gridRows.push({
         type: 'slot', subSlot: subSlot, key: `slot-${bloco.label}-${bloco.intendedPeriodo}-${blocoIndex}-${subSlotIndex}`
       });
     });
   });
+
   return (
     <div className={styles.gridContainer}>
       {/* Cabeçalho Fixo */}
@@ -172,7 +169,11 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({ eventos, semana
                 return (
                   <div key={`${diaNome}-${rowItem.subSlot.label}`} className={styles.gridCell}>
                     {eventosNoSlot.map(evento => (
-                      <CardEvento key={evento.id} evento={evento} />
+                      <CardEvento
+                        key={evento.id}
+                        evento={evento}
+                        onClick={() => onAbrirModalEditar(evento)} // <<< PASSANDO A FUNÇÃO PARA O CARD
+                      />
                     ))}
                   </div>
                 );

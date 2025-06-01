@@ -1,10 +1,9 @@
-/* src/components/Navbar/Navbar.css */
+/* src/components/Navbar/Navbar.module.css */
 
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* padding: 10px 20px; Mantido o padding original e adicionado o seu específico abaixo */
   color: white; /* Cor do texto na navbar */
   height: 60px; /* Altura da navbar */
   padding-left: 15%; /* Seu padding específico */
@@ -43,8 +42,6 @@
 /* Efeito de hover para o botão do usuário */
 .user-button:hover {
   background-color: rgba(255, 255, 255, 0.1); /* Um branco levemente transparente */
-  /* Ou uma cor específica, por exemplo, um azul um pouco mais escuro: */
-  /* background-color: #003bb5; */
   color: white; /* Garante que o texto permaneça branco no hover */
 }
 
