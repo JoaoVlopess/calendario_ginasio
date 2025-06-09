@@ -17,10 +17,9 @@
 
     /* Linting */
     "strict": true,
-    "forceConsistentCasingInFileNames": true, // <-- ADICIONE ESTA LINHA
+    "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },

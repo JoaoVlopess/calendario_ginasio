@@ -2,7 +2,7 @@
   padding: 6px;
   margin: 2px 0;
   border-radius: 4px;
-  background-color: #e0f7fa; /* Cor padrão, pode ser sobrescrita pela prop 'cor' do evento */
+  background-color: #e0f7fa;
   color: #004d40;
   font-size: 0.75em;
   overflow: hidden;

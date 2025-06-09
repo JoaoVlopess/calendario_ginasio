@@ -6,7 +6,7 @@
   grid-template-columns: 90px repeat(7, 1fr); /* Coluna de horário + 7 dias */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 20px auto;
-  max-width: 1200px; /* Ou o que for adequado */
+  max-width: 1200px;
   background-color: #fff;
   position: relative; /* Para headers fixos */
   border-radius: 12px;
@@ -40,11 +40,10 @@
     border-right: none;
 }
 
-
 .headerCell { /* Estilo para os dias da semana (SEGUNDA, TERÇA, etc.) */
-  background-color: #f8f9fa;
+  background-color: #f5f7ff;
   font-weight: 600;
-  color: #495057;
+  color: #1a237e;
   font-size: 0.85em;
   text-transform: uppercase;
   position: sticky;
@@ -58,31 +57,28 @@
 .stickyHeaderCol { /* Estilo para a coluna de horários (07:30, 08:20, etc.) */
   left: 0;
   z-index: 3;
-  background-color: #fdfdfd;
+  background-color: #f5f7ff;
 }
 
 /* Célula do canto superior esquerdo - HORÁRIO */
 .headerCell.stickyHeaderCol {
   z-index: 4;
-  background-color: #084cf4; /* <<< COR DA NAVBAR APLICADA AQUI */
-  color: white;              /* <<< TEXTO BRANCO PARA CONTRASTE */
-  /* As bordas podem precisar de ajuste se não parecerem bem com o fundo azul */
-  border-bottom: 1px solid #003bb5; /* Exemplo: borda um pouco mais escura que o fundo azul */
-  border-right: 1px solid #003bb5;  /* Exemplo: borda um pouco mais escura que o fundo azul */
+  background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+  color: white;
+  border-bottom: 1px solid #0d1642;
+  border-right: 1px solid #0d1642;
 }
-
 
 .timeSlotCell {
   background-color: #fff;
   font-size: 0.8em;
-  color: #6c757d;
+  color: #1a237e;
   font-weight: 500;
 }
 .timeSlotCell.stickyHeaderCol { /* Coluna de horários (07:30, 08:20 etc.) mantendo o fundo claro */
-    background-color: #fdfdfd; /* Mantém o fundo claro para os horários */
-    color: #6c757d; /* Mantém a cor do texto dos horários */
+    background-color: #f5f7ff;
+    color: #1a237e;
 }
-
 
 .gridCell {
   flex-direction: column;
@@ -105,25 +101,54 @@
   font-weight: 600;
   padding-top: 10px;
   padding-bottom: 10px;
-  background-color: #084cf4; /* <<< COR DA NAVBAR APLICADA AQUI */
-  color: white;              /* <<< TEXTO BRANCO PARA CONTRASTE */
-  border-top: 1px solid #003bb5;    /* Exemplo: borda um pouco mais escura */
-  /* border-bottom já é aplicado pela regra geral, mas pode ser ajustada se necessário */
-  border-right: none; /* Garante que não haja borda direita, pois ocupa a linha toda */
+  background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+  color: white;
+  border-top: 1px solid #0d1642;
+  border-right: none;
 }
 
 .blocoHeaderCell { /* Headers de Bloco (AB, CD, EF) */
-  grid-column: 1 / -1;
-  text-align: left;
-  padding-left: 25px;
-  justify-content: flex-start;
-  font-size: 0.9em;
-  font-style: normal;
-  background-color: #f8f9fa;
-  border-top: 1px dashed #e0e0e0;
-  color: #495057;
+  background-color: #f5f7ff;
+  color: #1a237e;
   font-weight: 500;
+  font-size: 0.9em;
   border-right: none; /* Garante que não haja borda direita */
+}
+
+/* Hover effects */
+.gridCell:hover {
+  background-color: #f5f7ff;
+}
+
+/* Custom scrollbar for grid cells */
+.gridCell::-webkit-scrollbar {
+  width: 6px;
+}
+
+.gridCell::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.gridCell::-webkit-scrollbar-thumb {
+  background: #c5cae9;
+  border-radius: 3px;
+}
+
+.gridCell::-webkit-scrollbar-thumb:hover {
+  background: #9fa8da;
+}
+
+/* Error state */
+.errorLoading {
+  color: #d32f2f;
+  text-align: center;
+  padding: 20px;
+  font-size: 1.1em;
+  background-color: #ffebee;
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 600px;
 }
 
 /* ... (restante do seu CSS, como .fullRow, .errorLoading) ... */

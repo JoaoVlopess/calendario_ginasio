@@ -148,14 +148,14 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({
       {gridRows.map((rowItem) => {
         if (rowItem.type === 'periodo') {
           return (
-            <div key={rowItem.key} className={`${styles.periodoHeaderCell} ${styles.fullRow}`}>
+            <div key={rowItem.key} className={`${styles.periodoHeaderCell} ${styles.fullRow}`} style={{ gridColumn: '1 / -1' }}>
               {rowItem.label}
             </div>
           );
         }
         if (rowItem.type === 'bloco') {
           return (
-            <div key={rowItem.key} className={`${styles.blocoHeaderCell} ${styles.fullRow}`}>
+            <div key={rowItem.key} className={`${styles.blocoHeaderCell} ${styles.fullRow}`} style={{ gridColumn: '1 / -1' }}>
               {rowItem.label}
             </div>
           );
@@ -163,7 +163,9 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({
         if (rowItem.type === 'slot') {
           return (
             <React.Fragment key={rowItem.key}>
+              {/* Primeira coluna: horário */}
               <div className={`${styles.timeSlotCell} ${styles.stickyHeaderCol}`}>{rowItem.subSlot.label}</div>
+              {/* Próximas colunas: eventos */}
               {DIAS_DA_SEMANA_ORDEM.map((diaNome) => {
                 const eventosNoSlot = getEventosParaSubSlot(diaNome, rowItem.subSlot);
                 return (
@@ -172,7 +174,7 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({
                       <CardEvento
                         key={evento.id}
                         evento={evento}
-                        onClick={() => onAbrirModalEditar(evento)} // <<< PASSANDO A FUNÇÃO PARA O CARD
+                        onClick={() => onAbrirModalEditar(evento)}
                       />
                     ))}
                   </div>
