@@ -46,12 +46,16 @@ export const CadastroForm = () => {
       // .toISOString() converterá para UTC.
       dataNascimento: new Date(dataNascimento).toISOString(),
     };
+        console.log("CadastroForm: Enviando dados de cadastro para API:", userData);
+
 
     try {
             // Usar axios diretamente com a URL completa do backend
       const response = await axios.post('https://fastcalendarbd.onrender.com/usuarios', userData, {
         headers: { 'Content-Type': 'application/json' }
       });
+            console.log("CadastroForm: Resposta da API (cadastro):", response);
+
       console.log('Usuário cadastrado:', response.data);
       setSuccess('Usuário cadastrado com sucesso!');
       // Limpar formulário (opcional)
@@ -64,7 +68,7 @@ export const CadastroForm = () => {
       navigate('/'); // 3. Redirecionar para a página de login (assumindo que '/' é a rota)
 
     } catch (err: any) {
-      console.error('Erro ao cadastrar usuário:', err.response?.data || err.message);
+      console.error('CadastroForm: Erro ao cadastrar usuário:', err.response || err.message, err);
       setError(err.response?.data?.message || 'Erro ao cadastrar usuário. Tente novamente.');
     }
   };

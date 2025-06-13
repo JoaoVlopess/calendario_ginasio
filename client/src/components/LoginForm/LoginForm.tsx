@@ -24,6 +24,8 @@ export const LoginForm = () => {
     // precisa reenviar as credenciais em cada requisição protegida.
     localStorage.setItem('userEmail', email);
     localStorage.setItem('userPassword', senha); // CUIDADO COM ISSO EM PRODUÇÃO
+    console.log("LoginForm: Credenciais armazenadas no localStorage. Email:", email);
+
 
     // Limpar campos (opcional)
     // setEmail('');

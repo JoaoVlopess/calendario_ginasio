@@ -193,12 +193,12 @@ export const CalendarioPage = () => {
     const eventoParaAPI = {
       titulo: eventoEditadoFrontend.titulo,
       descricao: eventoEditadoFrontend.descricao || "",
-      dataEvento: eventoEditadoFrontend.dataEvento.split('-').reverse().join('-'), // YYYY-MM-DD para dd-MM-YYYY
+      dataEvento: eventoEditadoFrontend.dataEvento, // Enviar como YYYY-MM-DD
       diasDaSemana: (() => {
         const dataObj = new Date(eventoEditadoFrontend.dataEvento + "T00:00:00");
         const diaNum = dataObj.getDay();
         const diaSemana = DIAS_SEMANA_OPCOES[(diaNum === 0 ? 6 : diaNum - 1)];
-        return diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
+        return diaSemana.toUpperCase(); // Ex: "SEXTA"
       })(),
       horarioInicio: eventoEditadoFrontend.horaInicio + ":00",
       horarioFim: eventoEditadoFrontend.horaFim + ":00",
@@ -290,12 +290,26 @@ export const CalendarioPage = () => {
     const novoEventoParaAPI = {
       titulo: dadosNovoEventoFrontend.titulo,
       descricao: dadosNovoEventoFrontend.descricao || "",
-      dataEvento: dadosNovoEventoFrontend.dataEvento, 
+      dataEvento: dadosNovoEventoFrontend.dataEvento, // Enviar como YYYY-MM-DD
       diasDaSemana: (() => { 
+            if (!dadosNovoEventoFrontend.dataEvento || typeof dadosNovoEventoFrontend.dataEvento !== 'string') {
+        console.error("CalendarioPage: dataEvento inválida ou ausente ao tentar gerar diasDaSemana:", dadosNovoEventoFrontend.dataEvento);
+        // Retornar um valor que o backend possa identificar como erro ou que seja tratado
+        // ou garantir que a validação no modal impeça isso.
+        return "INVALID_DATA_EVENTO"; 
+    }
         const dataObj = new Date(dadosNovoEventoFrontend.dataEvento + "T00:00:00");
+            if (isNaN(dataObj.getTime())) { // Verifica se a data é válida
+        console.error("CalendarioPage: dataEvento resultou em Data Inválida:", dadosNovoEventoFrontend.dataEvento);
+        return "INVALID_DATE_OBJECT";
+    }
         const diaNum = dataObj.getDay();
         const diaSemana = DIAS_SEMANA_OPCOES[(diaNum === 0 ? 6 : diaNum - 1)];
-        return diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
+            if (!diaSemana) {
+        console.error("CalendarioPage: Não foi possível determinar diaSemana a partir de diaNum:", diaNum, "para data:", dadosNovoEventoFrontend.dataEvento);
+        return "UNKNOWN_DAY_OF_WEEK";
+    }
+        return diaSemana.toUpperCase(); // Ex: "SEGUNDA"
       })(),
       horarioInicio: dadosNovoEventoFrontend.horaInicio + ":00",
       horarioFim: dadosNovoEventoFrontend.horaFim + ":00",

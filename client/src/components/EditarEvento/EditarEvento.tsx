@@ -104,6 +104,8 @@ export const EditarEventoModal: React.FC<EditarEventoModalProps> = ({
 
         id: evento.id,   // Garante que o ID original seja mantido
       };
+      console.log("EditarEventoModal: Enviando dados atualizados para onSave:", eventoAtualizado);
+
       onSave(eventoAtualizado);
     }
   };
@@ -111,6 +113,8 @@ export const EditarEventoModal: React.FC<EditarEventoModalProps> = ({
   // Manipulador para o botão de Deletar
   const handleDelete = () => {
     if (evento && evento.id) { // Garante que temos um ID de evento para deletar
+            console.log("EditarEventoModal: Solicitando deleção para evento ID:", evento.id);
+
       onDelete(evento.id);
     }
   };

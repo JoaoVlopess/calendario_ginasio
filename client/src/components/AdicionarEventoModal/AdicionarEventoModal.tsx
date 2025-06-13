@@ -137,6 +137,8 @@ export const AdicionarEventoModal: React.FC<AdicionarEventoModalProps> = ({
       local: formData.local || '',
       cor: formData.cor || '#81c784',
     };
+    console.log("AdicionarEventoModal: Enviando dados para onSave:", novoEventoData);
+
     onSave(novoEventoData);
   };
 
