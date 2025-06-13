@@ -55,3 +55,14 @@
   font-size: 0.8rem;
 }
 
+.errorMessage {
+  color: red;
+  background-color: #ffebee;
+  border: 1px solid red;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 0.9em;
+}
+

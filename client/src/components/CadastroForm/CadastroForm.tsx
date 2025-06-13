@@ -30,9 +30,11 @@ export const CadastroForm = () => {
       return;
     }
 
-    // Gerar matrícula aleatória (exemplo simples: prefixo + timestamp + número aleatório)
-    // Você pode ajustar a complexidade conforme necessário.
-    const matriculaGerada = `MAT${Date.now().toString().slice(-5)}${Math.floor(Math.random() * 1000)}`;
+        // Gerar matrícula com 8 números aleatórios
+    let matriculaGerada = '';
+    for (let i = 0; i < 8; i++) {
+      matriculaGerada += Math.floor(Math.random() * 10).toString();
+    }
 
     const userData = {
       nome,
