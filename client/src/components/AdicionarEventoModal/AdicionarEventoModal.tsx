@@ -7,6 +7,8 @@ import type { Evento, DiaDaSemana } from '../../types/evento';
 // Por enquanto, vamos assumir que os estilos são similares ao EditarEvento.module.css
 import styles from '../EditarEvento/EditarEvento.module.css'; // Reutilizando estilos para exemplo
 import { FiCheck } from 'react-icons/fi';
+import { getBlocosSelecionaveis, type BlocoSelecionavel } from '../../types/HorariosConfig';
+
 
 const DIAS_SEMANA_OPCOES: DiaDaSemana[] = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'];
 
@@ -21,12 +23,17 @@ interface AdicionarEventoModalProps {
   horaSelecionada?: string; // Para pré-selecionar a hora
 }
 
+const blocosDisponiveis = getBlocosSelecionaveis();
+
+
 // Estado inicial para o formulário de novo evento
 const estadoInicialFormulario: Partial<DadosNovoEvento> = {
   titulo: '',
   descricao: '',
-  horaInicio: '09:00',
-  horaFim: '10:00',
+    dataEvento: new Date().toISOString().split('T')[0], // Padrão para hoje "YYYY-MM-DD"
+
+  horaInicio: blocosDisponiveis.length > 0 ? blocosDisponiveis[0].horaInicio : '',
+  horaFim: blocosDisponiveis.length > 0 ? blocosDisponiveis[0].horaFim : '',
   diasDaSemana: [],
   responsavel: '',
   local: '',
@@ -40,33 +47,40 @@ export const AdicionarEventoModal: React.FC<AdicionarEventoModalProps> = ({
   dataSelecionada,
   horaSelecionada,
 }) => {
-  const [formData, setFormData] = useState<Partial<DadosNovoEvento>>(estadoInicialFormulario);
+    const [formData, setFormData] = useState<Partial<DadosNovoEvento>>(estadoInicialFormulario);
+  const [blocoSelecionadoValue, setBlocoSelecionadoValue] = useState<string>(blocosDisponiveis.length > 0 ? blocosDisponiveis[0].value : '');
 
   // Resetar formulário quando o modal é aberto
   useEffect(() => {
     if (isOpen) {
-     let initialState = { ...estadoInicialFormulario }; // Começa com o estado padrão
+      let initialState = { ...estadoInicialFormulario };
+      let initialBlocoValue = blocosDisponiveis.length > 0 ? blocosDisponiveis[0].value : '';
+      
 
-      if (dataSelecionada) {
+      if (dataSelecionada) { // dataSelecionada é um objeto Date do clique no grid
+        initialState = { ...initialState, dataEvento: dataSelecionada.toISOString().split('T')[0] };
         const diaNum = dataSelecionada.getDay(); // 0 (Dom) - 6 (Sab)
         // Ajustar mapeamento para DiaDaSemana[] (segunda, terca, ...)
         // Domingo (0) vira o último (índice 6), Segunda (1) vira o primeiro (índice 0)
         const diaSemana = DIAS_SEMANA_OPCOES[(diaNum === 0 ? 6 : diaNum - 1)];
-        initialState = { ...initialState, diasDaSemana: [diaSemana] };
+
+                initialState = { ...initialState, diasDaSemana: [diaSemana] };
+
+       
       }
 
       if (horaSelecionada) {
         // Garante que a hora está no formato HH:MM
         const horaFormatada = horaSelecionada.substring(0, 5);
-        initialState = { ...initialState, horaInicio: horaFormatada };
-        
-        // Opcional: Define horaFim uma hora depois de horaInicio
-        // const [h, m] = horaFormatada.split(':').map(Number);
-        // const fimDate = new Date();
-        // fimDate.setHours(h + 1, m, 0, 0);
-        // initialState = { ...initialState, horaFim: fimDate.toTimeString().substring(0,5) };
+               const blocoPreSelecionado = blocosDisponiveis.find(b => b.horaInicio === horaFormatada);
+        if (blocoPreSelecionado) {
+          initialState = { ...initialState, horaInicio: blocoPreSelecionado.horaInicio, horaFim: blocoPreSelecionado.horaFim };
+          initialBlocoValue = blocoPreSelecionado.value;
+        }
       }
       setFormData(initialState);
+      setBlocoSelecionadoValue(initialBlocoValue);
+
     }
   }, [isOpen, dataSelecionada, horaSelecionada]);
 
@@ -75,34 +89,49 @@ export const AdicionarEventoModal: React.FC<AdicionarEventoModalProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      [name]: value,
-    }));
+    if (name === "blocoHorario") {
+      setBlocoSelecionadoValue(value);
+      const blocoEscolhido = blocosDisponiveis.find(b => b.value === value);
+      if (blocoEscolhido) {
+        setFormData(prev => ({ ...prev, horaInicio: blocoEscolhido.horaInicio, horaFim: blocoEscolhido.horaFim }));
+      }
+    } else {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value,
+      }));
+    }
   };
 
   const handleDiasSemanaChange = (dia: DiaDaSemana) => {
     setFormData((prevFormData) => {
-      const diasAtuais = prevFormData.diasDaSemana ? [...prevFormData.diasDaSemana] : [];
-      const novosDias = diasAtuais.includes(dia)
-        ? diasAtuais.filter((d) => d !== dia)
-        : [...diasAtuais, dia];
+      // Se o dia clicado já é o único selecionado, desmarca (array vazio).
+      // Caso contrário, define o dia clicado como o único selecionado.
+      const novosDias = (prevFormData.diasDaSemana?.length === 1 && prevFormData.diasDaSemana[0] === dia)
+        ? []
+        : [dia];
       return { ...prevFormData, diasDaSemana: novosDias };
     });
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!formData.titulo || !formData.horaInicio || !formData.horaFim || !formData.diasDaSemana || formData.diasDaSemana.length === 0) {
-      alert('Por favor, preencha: Título, Hora Início, Hora Fim e selecione ao menos um Dia da Semana.');
+      if (!formData.titulo || !formData.dataEvento || !blocoSelecionadoValue ) {
+      alert('Por favor, preencha: Título, Data do Evento e Bloco de Horário.');
       return;
     }
+        // Derivar diasDaSemana a partir da dataEvento para consistência,
+    // já que o backend espera um único dia da semana associado à data específica.
+    const dataObj = new Date(formData.dataEvento! + "T00:00:00"); // Adiciona T00:00:00 para evitar problemas de fuso
+    const diaNum = dataObj.getDay();
+    const diaSemanaCalculado = DIAS_SEMANA_OPCOES[(diaNum === 0 ? 6 : diaNum - 1)];
 
     const novoEventoData: DadosNovoEvento = {
       titulo: formData.titulo,
-      diasDaSemana: formData.diasDaSemana || [],
-      horaInicio: formData.horaInicio,
-      horaFim: formData.horaFim,
+      dataEvento: formData.dataEvento!,
+      diasDaSemana: [diaSemanaCalculado], // Usar o dia da semana derivado da dataEvento
+      horaInicio: formData.horaInicio!, // Asseguramos que está definido pela seleção do bloco
+      horaFim: formData.horaFim!,
       responsavel: formData.responsavel || null,
       descricao: formData.descricao || '',
       local: formData.local || '',
@@ -128,15 +157,20 @@ export const AdicionarEventoModal: React.FC<AdicionarEventoModalProps> = ({
             <label htmlFor="descricao-novo">Descrição:</label>
             <textarea id="descricao-novo" name="descricao" value={formData.descricao || ''} onChange={handleChange} />
           </div>
-          <div className={styles.formRow}>
-            <div className={styles.formGroup}>
-              <label htmlFor="horaInicio-novo">Hora Início:</label>
-              <input type="time" id="horaInicio-novo" name="horaInicio" value={formData.horaInicio || '00:00'} onChange={handleChange} required />
-            </div>
-            <div className={styles.formGroup}>
-              <label htmlFor="horaFim-novo">Hora Fim:</label>
-              <input type="time" id="horaFim-novo" name="horaFim" value={formData.horaFim || '00:00'} onChange={handleChange} required />
-            </div>
+                    <div className={styles.formGroup}>
+            <label htmlFor="blocoHorario-novo">Bloco de Horário:</label>
+            <select
+              id="blocoHorario-novo"
+              name="blocoHorario"
+              value={blocoSelecionadoValue}
+              onChange={handleChange}
+              required
+            >
+              <option value="" disabled>Selecione um bloco</option>
+              {blocosDisponiveis.map(bloco => (
+                <option key={bloco.value} value={bloco.value}>{bloco.labelDisplay}</option>
+              ))}
+            </select>
           </div>
           <div className={styles.formGroup}>
             <label>Dias da Semana:</label>
@@ -162,6 +196,10 @@ export const AdicionarEventoModal: React.FC<AdicionarEventoModalProps> = ({
           <div className={styles.formGroup}>
             <label htmlFor="local-novo">Local:</label>
             <input type="text" id="local-novo" name="local" value={formData.local || ''} onChange={handleChange} />
+          </div>
+            <div className={styles.formGroup}>
+            <label htmlFor="dataEvento-novo">Data do Evento:</label>
+            <input type="date" id="dataEvento-novo" name="dataEvento" value={formData.dataEvento || ''} onChange={handleChange} required />
           </div>
           <div className={styles.formGroup}>
             <label htmlFor="cor-novo">Cor do Evento:</label>

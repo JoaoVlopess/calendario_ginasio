@@ -1,10 +1,12 @@
-// src/pages/CalendarioPage/CalendarioPage.tsx
 import React, { useState, useEffect } from 'react';
 import GridEventosSemanal from "../../components/GridEventosSemanal/GridEventosSemanal";
-import type { Evento } from '../../types/evento';
+import type { Evento, DiaDaSemana  } from '../../types/evento';
 import Navbar from "../../components/Navbar/Navbar";
 import { EditarEventoModal } from '../../components/EditarEvento/EditarEvento';
 import { AdicionarEventoModal, type DadosNovoEvento } from '../../components/AdicionarEventoModal/AdicionarEventoModal'; // Importar o novo modal e tipo
+import axios from 'axios'; // Para chamadas API
+import { useNavigate } from 'react-router'; // Corrigido para react-router-dom
+import { getBlocosSelecionaveis, type BlocoSelecionavel } from '../../types/HorariosConfig'; // Corrigido caminho
 
 // Funções auxiliares para manipulação de datas
 function getMondayOfWeek(date: Date): Date {
@@ -24,24 +26,100 @@ function getSemana(date: Date): Date[] {
     return d;
   });
 }
+// Constante para os dias da semana, necessária para derivar o dia ao enviar para a API
+const DIAS_SEMANA_OPCOES: DiaDaSemana[] = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'];
 
-// Dados mockados de eventos (substitua pela sua lógica de fetch de dados)
-const eventosMockPorSemana: Record<string, Evento[]> = {
-  [getMondayOfWeek(new Date()).toISOString().slice(0, 10)]: [
-    { id: '1', titulo: 'Futsal Treino', diasDaSemana: ['segunda', 'quarta'], horaInicio: '07:30', horaFim: '08:30', responsavel: 'Prof. Silva', dataCriacao: new Date().toISOString(), descricao: 'Treino de futsal masculino', local: 'Quadra A', cor: '#81c784' },
-    { id: '2', titulo: 'Vôlei Comp.', diasDaSemana: ['segunda'], horaInicio: '08:00', horaFim: '09:00', responsavel: 'Prof. Ana', dataCriacao: new Date().toISOString(), descricao: 'Competição de vôlei', local: 'Ginásio', cor: '#ffb74d' },
-    { id: '3', titulo: 'Basquete Livre', diasDaSemana: ['terca'], horaInicio: '08:30', horaFim: '09:30', responsavel: null, dataCriacao: new Date().toISOString(), descricao: 'Jogo livre de basquete', local: 'Quadra B', cor: '#64b5f6' },
-  ]
+
+// Função para transformar evento da API para o formato do frontend
+const transformarEventoDaAPI = (eventoAPI: any): Evento | null => {
+  // Verifica se eventoAPI existe e se possui uma propriedade 'idEvento' que não seja null ou undefined.
+  if (!eventoAPI || typeof eventoAPI.idEvento === 'undefined' || eventoAPI.idEvento === null) {
+    console.warn('Evento da API recebido sem ID, ou com ID nulo/undefined:', eventoAPI);
+    return null; // Marcar para filtragem
+  }
+
+  const idAsString = String(eventoAPI.idEvento).trim(); // Usar idEvento
+
+  if (idAsString === "" || idAsString === "null" || idAsString === "undefined") {
+    console.warn('Evento da API resultou em ID problemático para chave React:', eventoAPI, 'ID processado:', idAsString);
+    return null; // Marcar para filtragem se o ID for uma string vazia, "null", ou "undefined"
+  }
+    
+  let dataEventoFormatadaParaFrontend: string | null = null;
+
+  if (eventoAPI.dataEvento && typeof eventoAPI.dataEvento === 'string') {
+    const dateStr = eventoAPI.dataEvento.trim();
+    const parts = dateStr.split('-');
+
+    if (parts.length === 3) {
+      let year: string, month: string, day: string;
+
+      // Check if it's YYYY-MM-DD
+      if (parts[0].length === 4 && !isNaN(parseInt(parts[0])) &&
+          parts[1].length >= 1 && parts[1].length <= 2 && !isNaN(parseInt(parts[1])) &&
+          parts[2].length >= 1 && parts[2].length <= 2 && !isNaN(parseInt(parts[2]))) {
+        year = parts[0];
+        month = parts[1];
+        day = parts[2];
+      }
+      // Else, check if it's dd-MM-YYYY (as expected by @JsonFormat)
+      else if (parts[2].length === 4 && !isNaN(parseInt(parts[2])) &&
+               parts[1].length >= 1 && parts[1].length <= 2 && !isNaN(parseInt(parts[1])) &&
+               parts[0].length >= 1 && parts[0].length <= 2 && !isNaN(parseInt(parts[0]))) {
+        year = parts[2];
+        month = parts[1];
+        day = parts[0];
+      } else {
+        year = month = day = ""; // Invalid format
+      }
+      if (year && month && day) {
+        const monthNum = parseInt(month, 10);
+        const dayNum = parseInt(day, 10);
+        if (year.length === 4 && monthNum >= 1 && monthNum <= 12 && dayNum >= 1 && dayNum <= 31) { // Basic validation
+          dataEventoFormatadaParaFrontend = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        } else {
+          console.warn(`Partes da dataEvento ("${eventoAPI.dataEvento}") inválidas para evento ID ${idAsString}. Usando fallback.`);
+        }
+      } else {
+         console.warn(`Formato de dataEvento ("${eventoAPI.dataEvento}") não reconhecido (esperado dd-MM-yyyy ou YYYY-MM-DD) para evento ID ${idAsString}. Usando fallback.`);
+      }
+    } else {
+      console.warn(`Formato de dataEvento ("${eventoAPI.dataEvento}") não é divisível em 3 partes por '-' para evento ID ${idAsString}. Usando fallback.`);
+    }
+  } else {
+    console.warn(`dataEvento ausente ou não é string na resposta da API para evento ID ${idAsString}. Usando fallback.`);
+  }
+  
+  if (!dataEventoFormatadaParaFrontend) {
+    console.warn(`dataEvento ("${eventoAPI.dataEvento}") ausente, inválida ou em formato não reconhecido para evento ID ${idAsString}. Evento será filtrado.`);
+    return null; // Se dataEvento é crucial e não pode ser parseada, filtramos o evento.
+  }
+  
+  return {
+    id: idAsString, // Usar o ID processado e validado
+    titulo: eventoAPI.titulo,
+    descricao: eventoAPI.descricao || "",
+    dataEvento: dataEventoFormatadaParaFrontend, // Formato "YYYY-MM-DD"
+    diasDaSemana: eventoAPI.diasDaSemana ? [eventoAPI.diasDaSemana.toLowerCase() as DiaDaSemana] : [],
+    horaInicio: eventoAPI.horarioInicio ? eventoAPI.horarioInicio.substring(0, 5) : "00:00", // "HH:mm:ss" para "HH:mm"
+    horaFim: eventoAPI.horarioFim ? eventoAPI.horarioFim.substring(0, 5) : "00:00",       // "HH:mm:ss" para "HH:mm"
+    responsavel: eventoAPI.responsavel || null,
+    local: eventoAPI.localidade || "", // Mapear localidade para local
+    cor: eventoAPI.cor || "#81c784",
+    dataCriacao: eventoAPI.dataCriacao || new Date().toISOString(),
+  };
 };
+
 
 export const CalendarioPage = () => {
   const [dataBase, setDataBase] = useState<Date>(getMondayOfWeek(new Date()));
-  const [eventosPorSemana, setEventosPorSemana] = useState<Record<string, Evento[]>>(eventosMockPorSemana);
+  const [todosOsEventos, setTodosOsEventos] = useState<Evento[]>([]); // Novo estado para todos os eventos da API
   const [semanaAtual, setSemanaAtual] = useState<Date[]>(getSemana(new Date()));
 
   // Estados para o modal de Edição
   const [isEditarModalOpen, setIsEditarModalOpen] = useState(false);
   const [eventoSelecionado, setEventoSelecionado] = useState<Evento | null>(null);
+  const navigate = useNavigate(); // Hook para navegação
 
   // Estados para o modal de Adição
   const [isAdicionarModalOpen, setIsAdicionarModalOpen] = useState(false);
@@ -52,8 +130,43 @@ export const CalendarioPage = () => {
     setSemanaAtual(getSemana(dataBase));
   }, [dataBase]);
 
-  // Filtra os eventos para a semana atual
-  const eventosDaSemanaAtual = eventosPorSemana[getMondayOfWeek(dataBase).toISOString().slice(0, 10)] || [];
+  // Busca eventos da API ao montar o componente
+  useEffect(() => {
+    const fetchEventosDaAPI = async () => {
+      const email = localStorage.getItem('userEmail');
+      const password = localStorage.getItem('userPassword');
+
+      if (!email || !password) {
+        console.error("Credenciais não encontradas, redirecionando para login.");
+        navigate('/'); // Redireciona para a página de login
+        return;
+      }
+
+      const token = btoa(`${email}:${password}`);
+
+      try {
+        const response = await axios.get('https://fastcalendarbd.onrender.com/eventos', {
+          headers: {
+            'Authorization': `Basic ${token}`,
+          }
+        });
+        const eventosBrutos = Array.isArray(response.data) ? response.data : [];
+        const eventosTransformadosComPotenciaisNulos = eventosBrutos.map(transformarEventoDaAPI);
+        const eventosValidos = eventosTransformadosComPotenciaisNulos.filter(e => e !== null) as Evento[]; // Filtra nulos e faz type assertion
+        setTodosOsEventos(eventosValidos);
+      } catch (error: any) {
+        console.error('Erro ao buscar eventos:', error.response?.data || error.message);
+        if (error.response?.status === 401) {
+          localStorage.removeItem('userEmail');
+          localStorage.removeItem('userPassword');
+          alert("Sessão expirada ou credenciais inválidas. Por favor, faça login novamente.");
+          navigate('/');
+        }
+      }
+    };
+
+    fetchEventosDaAPI();
+  }, [navigate]); 
 
   // Handlers para o modal de Edição
   const handleAbrirEditarModal = (evento: Evento) => {
@@ -66,22 +179,90 @@ export const CalendarioPage = () => {
     setEventoSelecionado(null);
   };
 
-  const handleSalvarEventoEditado = (eventoAtualizado: Evento) => {
-    const key = getMondayOfWeek(dataBase).toISOString().slice(0, 10);
-    setEventosPorSemana(prev => ({
-      ...prev,
-      [key]: (prev[key] || []).map(ev => (ev.id === eventoAtualizado.id ? eventoAtualizado : ev))
-    }));
-    handleFecharEditarModal();
+  const handleSalvarEventoEditado = async (eventoEditadoFrontend: Evento) => {
+    const email = localStorage.getItem('userEmail');
+    const password = localStorage.getItem('userPassword');
+
+    if (!email || !password) {
+      alert("Credenciais não encontradas. Faça login novamente.");
+      navigate('/');
+      return;
+    }
+    const authToken = btoa(`${email}:${password}`);
+
+    const eventoParaAPI = {
+      titulo: eventoEditadoFrontend.titulo,
+      descricao: eventoEditadoFrontend.descricao || "",
+      dataEvento: eventoEditadoFrontend.dataEvento.split('-').reverse().join('-'), // YYYY-MM-DD para dd-MM-YYYY
+      diasDaSemana: (() => {
+        const dataObj = new Date(eventoEditadoFrontend.dataEvento + "T00:00:00");
+        const diaNum = dataObj.getDay();
+        const diaSemana = DIAS_SEMANA_OPCOES[(diaNum === 0 ? 6 : diaNum - 1)];
+        return diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
+      })(),
+      horarioInicio: eventoEditadoFrontend.horaInicio + ":00",
+      horarioFim: eventoEditadoFrontend.horaFim + ":00",
+      responsavel: eventoEditadoFrontend.responsavel || null,
+      localidade: eventoEditadoFrontend.local || "",
+      recorrencia: "NENHUM",
+      recorrenciaFim: null,
+      cor: eventoEditadoFrontend.cor || "#81c784",
+    };
+
+    try {
+      const response = await axios.put(
+        `https://fastcalendarbd.onrender.com/eventos/${eventoEditadoFrontend.id}`,
+        eventoParaAPI,
+        {
+          headers: {
+            'Authorization': `Basic ${authToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      const eventoAtualizadoDoBackend = transformarEventoDaAPI(response.data || { ...eventoParaAPI, idEvento: Number(eventoEditadoFrontend.id), dataCriacao: eventoEditadoFrontend.dataCriacao });
+
+      if (eventoAtualizadoDoBackend) {
+        setTodosOsEventos(prevEventos =>
+          prevEventos.map((ev: Evento) => (ev.id === eventoAtualizadoDoBackend.id ? eventoAtualizadoDoBackend : ev))
+        );
+      } else {
+        console.error("Falha ao transformar o evento atualizado da API, o estado não foi modificado para este evento.");
+      }
+      handleFecharEditarModal();
+      alert("Evento atualizado com sucesso!");
+    } catch (error: any) {
+      console.error('Erro ao atualizar evento:', error.response?.data || error.message);
+      alert(`Erro ao atualizar evento: ${error.response?.data?.message || error.message}`);
+      if (error.response?.status === 401) {
+        navigate('/');
+      }
+    }
   };
 
-  const handleDeletarEvento = (eventoId: string) => {
-    const key = getMondayOfWeek(dataBase).toISOString().slice(0, 10);
-    setEventosPorSemana(prev => ({
-      ...prev,
-      [key]: (prev[key] || []).filter(ev => ev.id !== eventoId)
-    }));
-    handleFecharEditarModal();
+  const handleDeletarEvento = async (eventoId: string) => {
+    const email = localStorage.getItem('userEmail');
+    const password = localStorage.getItem('userPassword');
+    if (!email || !password) { 
+        alert("Credenciais não encontradas. Faça login novamente.");
+        navigate('/'); 
+        return; 
+    }
+    const authToken = btoa(`${email}:${password}`);
+
+    try {
+      await axios.delete(`https://fastcalendarbd.onrender.com/eventos/${eventoId}`, {
+        headers: { 'Authorization': `Basic ${authToken}` }
+      });
+      setTodosOsEventos(prevEventos => prevEventos.filter((ev: Evento) => ev.id !== eventoId));
+      handleFecharEditarModal();
+      alert("Evento deletado com sucesso!");
+    } catch (error: any) {
+      console.error('Erro ao deletar evento:', error.response?.data || error.message);
+      alert(`Erro ao deletar evento: ${error.response?.data?.message || error.message}`);
+      if (error.response?.status === 401) navigate('/');
+    }
   };
 
   // Handlers para o modal de Adição
@@ -95,19 +276,64 @@ export const CalendarioPage = () => {
     setDataHoraPreenchimento(null);
   };
 
-  const handleSalvarNovoEvento = (dadosNovoEvento: DadosNovoEvento) => {
-    const key = getMondayOfWeek(dataBase).toISOString().slice(0, 10); // Adiciona à semana atual
-    const novoEvento: Evento = {
-      ...dadosNovoEvento,
-      id: `evt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Gerar ID único (melhorar com UUID em produção)
-      dataCriacao: new Date().toISOString(),
+  const handleSalvarNovoEvento = async (dadosNovoEventoFrontend: DadosNovoEvento) => {
+    const email = localStorage.getItem('userEmail');
+    const password = localStorage.getItem('userPassword');
+
+    if (!email || !password) {
+      alert("Credenciais não encontradas. Faça login novamente.");
+      navigate('/');
+      return;
+    }
+    const authToken = btoa(`${email}:${password}`);
+
+    const novoEventoParaAPI = {
+      titulo: dadosNovoEventoFrontend.titulo,
+      descricao: dadosNovoEventoFrontend.descricao || "",
+      dataEvento: dadosNovoEventoFrontend.dataEvento, 
+      diasDaSemana: (() => { 
+        const dataObj = new Date(dadosNovoEventoFrontend.dataEvento + "T00:00:00");
+        const diaNum = dataObj.getDay();
+        const diaSemana = DIAS_SEMANA_OPCOES[(diaNum === 0 ? 6 : diaNum - 1)];
+        return diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
+      })(),
+      horarioInicio: dadosNovoEventoFrontend.horaInicio + ":00",
+      horarioFim: dadosNovoEventoFrontend.horaFim + ":00",
+      responsavel: dadosNovoEventoFrontend.responsavel || null,
+      localidade: dadosNovoEventoFrontend.local || "",
+      recorrencia: "NENHUM",
+      recorrenciaFim: null,
+      cor: dadosNovoEventoFrontend.cor || "#81c784",
     };
-    setEventosPorSemana(prev => ({
-      ...prev,
-      [key]: [...(prev[key] || []), novoEvento]
-    }));
-    handleFecharAdicionarModal();
+
+    try {
+      const response = await axios.post(
+        'https://fastcalendarbd.onrender.com/eventos',
+        novoEventoParaAPI,
+        {
+          headers: {
+            'Authorization': `Basic ${authToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const novoEventoDoBackend = transformarEventoDaAPI(response.data);
+      if (novoEventoDoBackend) {
+        setTodosOsEventos(prevEventos => [...prevEventos, novoEventoDoBackend]);
+      }
+      handleFecharAdicionarModal();
+      alert("Novo evento adicionado com sucesso!");
+    } catch (error: any) {
+      console.error('Erro ao adicionar evento:', error.response?.data || error.message);
+      alert(`Erro ao adicionar evento: ${error.response?.data?.message || error.message}`);
+      if (error.response?.status === 401) {
+        navigate('/');
+      }
+    }
   };
+
+  const eventosDaSemanaAtual = todosOsEventos;
 
   // Navegação de semana
   const handleSemanaAnterior = () => {
@@ -123,7 +349,6 @@ export const CalendarioPage = () => {
   };
 
   const handleEscolherSemana = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Adiciona o fuso horário local para evitar problemas de um dia a menos
     const dataSelecionada = new Date(e.target.value + 'T00:00:00');
     setDataBase(getMondayOfWeek(dataSelecionada));
   };
@@ -142,10 +367,9 @@ export const CalendarioPage = () => {
         <button onClick={handleProximaSemana} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#084cf4', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Próxima Semana</button>
       </div>
 
-      {/* Botão para abrir o modal de adicionar evento (substituir por clique no grid idealmente) */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
         <button
-          onClick={() => handleAbrirAdicionarModal()} // Abre sem pré-preenchimento
+          onClick={() => handleAbrirAdicionarModal()}
           style={{ padding: '10px 20px', borderRadius: 6, border: 'none', background: '#4CAF50', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
         >
           Adicionar Novo Evento
@@ -156,11 +380,9 @@ export const CalendarioPage = () => {
         eventos={eventosDaSemanaAtual}
         semana={semanaAtual}
         onAbrirModalEditar={handleAbrirEditarModal}
-         // Certifique-se de que GridEventosSemanal.tsx tenha uma prop como onSlotVazioClick
         onSlotVazioClick={handleAbrirAdicionarModal}
       />
 
-      {/* Modal de Edição de Evento */}
       {isEditarModalOpen && eventoSelecionado && (
         <EditarEventoModal
           evento={eventoSelecionado}
@@ -171,7 +393,6 @@ export const CalendarioPage = () => {
         />
       )}
 
-      {/* Modal de Adição de Novo Evento */}
       {isAdicionarModalOpen && (
         <AdicionarEventoModal
           isOpen={isAdicionarModalOpen}

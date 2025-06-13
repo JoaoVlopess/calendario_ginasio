@@ -7,7 +7,7 @@ import styles from './GridEventosSemanal.module.css';
 interface EventosGridSemanalProps {
   eventos: Evento[];
   semana: Date[]; // Array de 7 Date objects, de segunda a domingo para a semana atual
-   onAbrirModalEditar: (evento: Evento) => void;
+  onAbrirModalEditar: (evento: Evento) => void;
   onSlotVazioClick?: (data: Date, hora: string) => void; // Nova prop para cliques em slots vazios
 }
 
@@ -50,40 +50,56 @@ type BlocoConfig = {
 
 const ALL_BLOCO_CONFIGS: BlocoConfig[] = [
   // MANHÃ
-  { label: "AB", intendedPeriodo: "MANHÃ", subSlots: [
-    { label: "07:30", startMinutes: timeToMinutes("07:30"), endMinutes: timeToMinutes("08:20") },
-    { label: "08:20", startMinutes: timeToMinutes("08:20"), endMinutes: timeToMinutes("09:10") },
-  ]},
-  { label: "CD", intendedPeriodo: "MANHÃ", subSlots: [
-    { label: "09:30", startMinutes: timeToMinutes("09:30"), endMinutes: timeToMinutes("10:20") },
-    { label: "10:20", startMinutes: timeToMinutes("10:20"), endMinutes: timeToMinutes("11:10") },
-  ]},
-  { label: "EF", intendedPeriodo: "MANHÃ", subSlots: [
-    { label: "11:20", startMinutes: timeToMinutes("11:20"), endMinutes: timeToMinutes("12:10") },
-    { label: "12:10", startMinutes: timeToMinutes("12:10"), endMinutes: timeToMinutes("13:00") },
-  ]},
+  {
+    label: "AB", intendedPeriodo: "MANHÃ", subSlots: [
+      { label: "07:30", startMinutes: timeToMinutes("07:30"), endMinutes: timeToMinutes("08:20") },
+      { label: "08:20", startMinutes: timeToMinutes("08:20"), endMinutes: timeToMinutes("09:10") },
+    ]
+  },
+  {
+    label: "CD", intendedPeriodo: "MANHÃ", subSlots: [
+      { label: "09:30", startMinutes: timeToMinutes("09:30"), endMinutes: timeToMinutes("10:20") },
+      { label: "10:20", startMinutes: timeToMinutes("10:20"), endMinutes: timeToMinutes("11:10") },
+    ]
+  },
+  {
+    label: "EF", intendedPeriodo: "MANHÃ", subSlots: [
+      { label: "11:20", startMinutes: timeToMinutes("11:20"), endMinutes: timeToMinutes("12:10") },
+      { label: "12:10", startMinutes: timeToMinutes("12:10"), endMinutes: timeToMinutes("13:00") },
+    ]
+  },
   // TARDE
-  { label: "AB", intendedPeriodo: "TARDE", subSlots: [
-    { label: "13:30", startMinutes: timeToMinutes("13:30"), endMinutes: timeToMinutes("14:20") },
-    { label: "14:20", startMinutes: timeToMinutes("14:20"), endMinutes: timeToMinutes("15:10") },
-  ]},
-  { label: "CD", intendedPeriodo: "TARDE", subSlots: [
-    { label: "15:30", startMinutes: timeToMinutes("15:30"), endMinutes: timeToMinutes("16:20") },
-    { label: "16:20", startMinutes: timeToMinutes("16:20"), endMinutes: timeToMinutes("17:10") },
-  ]},
-  { label: "EF", intendedPeriodo: "TARDE", subSlots: [
-    { label: "17:20", startMinutes: timeToMinutes("17:20"), endMinutes: timeToMinutes("18:10") },
-    { label: "18:10", startMinutes: timeToMinutes("18:10"), endMinutes: timeToMinutes("19:00") },
-  ]},
+  {
+    label: "AB", intendedPeriodo: "TARDE", subSlots: [
+      { label: "13:30", startMinutes: timeToMinutes("13:30"), endMinutes: timeToMinutes("14:20") },
+      { label: "14:20", startMinutes: timeToMinutes("14:20"), endMinutes: timeToMinutes("15:10") },
+    ]
+  },
+  {
+    label: "CD", intendedPeriodo: "TARDE", subSlots: [
+      { label: "15:30", startMinutes: timeToMinutes("15:30"), endMinutes: timeToMinutes("16:20") },
+      { label: "16:20", startMinutes: timeToMinutes("16:20"), endMinutes: timeToMinutes("17:10") },
+    ]
+  },
+  {
+    label: "EF", intendedPeriodo: "TARDE", subSlots: [
+      { label: "17:20", startMinutes: timeToMinutes("17:20"), endMinutes: timeToMinutes("18:10") },
+      { label: "18:10", startMinutes: timeToMinutes("18:10"), endMinutes: timeToMinutes("19:00") },
+    ]
+  },
   // NOITE
-  { label: "AB", intendedPeriodo: "NOITE", subSlots: [
-    { label: "19:00", startMinutes: timeToMinutes("19:00"), endMinutes: timeToMinutes("19:50") },
-    { label: "19:50", startMinutes: timeToMinutes("19:50"), endMinutes: timeToMinutes("20:40") },
-  ]},
-  { label: "CD", intendedPeriodo: "NOITE", subSlots: [
-    { label: "21:00", startMinutes: timeToMinutes("21:00"), endMinutes: timeToMinutes("21:50") },
-    { label: "21:50", startMinutes: timeToMinutes("21:50"), endMinutes: timeToMinutes("22:40") },
-  ]},
+  {
+    label: "AB", intendedPeriodo: "NOITE", subSlots: [
+      { label: "19:00", startMinutes: timeToMinutes("19:00"), endMinutes: timeToMinutes("19:50") },
+      { label: "19:50", startMinutes: timeToMinutes("19:50"), endMinutes: timeToMinutes("20:40") },
+    ]
+  },
+  {
+    label: "CD", intendedPeriodo: "NOITE", subSlots: [
+      { label: "21:00", startMinutes: timeToMinutes("21:00"), endMinutes: timeToMinutes("21:50") },
+      { label: "21:50", startMinutes: timeToMinutes("21:50"), endMinutes: timeToMinutes("22:40") },
+    ]
+  },
 ];
 
 type RowItem =
@@ -102,9 +118,15 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({
     return <div className={styles.errorLoading}>Erro ao carregar calendário: dados da semana inválidos.</div>;
   }
 
-  const getEventosParaSubSlot = (dia: DiaDaSemana, subSlot: SubSlot): Evento[] => {
+  // diaDaSemanaNoGrid: 'segunda', 'terca', etc. (nome do dia da coluna)
+  // dataDaColuna: objeto Date para o dia específico da coluna
+  const getEventosParaSubSlot = (diaDaSemanaNoGrid: DiaDaSemana, dataDaColuna: Date, subSlot: SubSlot): Evento[] => {
     return eventos.filter(evento => {
-      if (!evento.diasDaSemana.includes(dia)) {
+      // Compara a data do evento ("YYYY-MM-DD") com a data da coluna do grid
+      const dataEventoFormatada = evento.dataEvento; // Já está como "YYYY-MM-DD"
+      const dataColunaFormatada = dataDaColuna.toISOString().split('T')[0];
+
+      if (dataEventoFormatada !== dataColunaFormatada) {
         return false;
       }
       const slotStartTimeMinutes = subSlot.startMinutes;
@@ -169,8 +191,8 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({
               <div className={`${styles.timeSlotCell} ${styles.stickyHeaderCol}`}>{rowItem.subSlot.label}</div>
               {/* Próximas colunas: eventos */}
               {DIAS_DA_SEMANA_ORDEM.map((diaNome, diaIndex) => { // Adicionado diaIndex para acessar a data correta da semana
-                const eventosNoSlot = getEventosParaSubSlot(diaNome, rowItem.subSlot);
-                 const dataDaCelula = semana[diaIndex]; // Data correspondente à coluna do dia
+                const dataDaCelula = semana[diaIndex]; // Data correspondente à coluna do dia
+                const eventosNoSlot = getEventosParaSubSlot(diaNome, dataDaCelula, rowItem.subSlot);
                 const horaDaCelula = rowItem.subSlot.label; // Hora do slot (ex: "07:30")
                 return (
                   <div
@@ -185,7 +207,7 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({
                   >
                     {eventosNoSlot.length > 0 ? (
                       eventosNoSlot.map(evento => (
-                                               // Envolve CardEvento em uma div para aplicar stopPropagation
+                        // Envolve CardEvento em uma div para aplicar stopPropagation
                         // e passa uma função compatível para o onClick do CardEvento.
                         <div key={evento.id} onClick={(e) => e.stopPropagation()}>
                           <CardEvento
