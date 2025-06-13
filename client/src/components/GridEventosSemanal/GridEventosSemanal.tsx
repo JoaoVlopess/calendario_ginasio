@@ -7,7 +7,8 @@ import styles from './GridEventosSemanal.module.css';
 interface EventosGridSemanalProps {
   eventos: Evento[];
   semana: Date[]; // Array de 7 Date objects, de segunda a domingo para a semana atual
-  onAbrirModalEditar: (evento: Evento) => void; // <<< ADICIONADA A PROP AQUI
+   onAbrirModalEditar: (evento: Evento) => void;
+  onSlotVazioClick?: (data: Date, hora: string) => void; // Nova prop para cliques em slots vazios
 }
 
 const DIAS_DA_SEMANA_ORDEM: DiaDaSemana[] = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'];
@@ -93,7 +94,8 @@ type RowItem =
 const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({
   eventos,
   semana,
-  onAbrirModalEditar, // <<< PROP RECEBIDA AQUI
+  onAbrirModalEditar,
+  onSlotVazioClick, // Recebendo a nova prop
 }) => {
   if (semana.length !== 7) {
     console.error("A propriedade 'semana' deve conter exatamente 7 objetos Date.");
@@ -166,17 +168,35 @@ const EventosGridSemanal: React.FC<EventosGridSemanalProps> = ({
               {/* Primeira coluna: horário */}
               <div className={`${styles.timeSlotCell} ${styles.stickyHeaderCol}`}>{rowItem.subSlot.label}</div>
               {/* Próximas colunas: eventos */}
-              {DIAS_DA_SEMANA_ORDEM.map((diaNome) => {
+              {DIAS_DA_SEMANA_ORDEM.map((diaNome, diaIndex) => { // Adicionado diaIndex para acessar a data correta da semana
                 const eventosNoSlot = getEventosParaSubSlot(diaNome, rowItem.subSlot);
+                 const dataDaCelula = semana[diaIndex]; // Data correspondente à coluna do dia
+                const horaDaCelula = rowItem.subSlot.label; // Hora do slot (ex: "07:30")
                 return (
-                  <div key={`${diaNome}-${rowItem.subSlot.label}`} className={styles.gridCell}>
-                    {eventosNoSlot.map(evento => (
-                      <CardEvento
-                        key={evento.id}
-                        evento={evento}
-                        onClick={() => onAbrirModalEditar(evento)}
-                      />
-                    ))}
+                  <div
+                    key={`${diaNome}-${horaDaCelula}`}
+                    className={styles.gridCell}
+                    onClick={() => {
+                      // Se não há eventos neste slot e a função onSlotVazioClick foi passada, chama ela
+                      if (eventosNoSlot.length === 0 && onSlotVazioClick) {
+                        onSlotVazioClick(dataDaCelula, horaDaCelula);
+                      }
+                    }}
+                  >
+                    {eventosNoSlot.length > 0 ? (
+                      eventosNoSlot.map(evento => (
+                                               // Envolve CardEvento em uma div para aplicar stopPropagation
+                        // e passa uma função compatível para o onClick do CardEvento.
+                        <div key={evento.id} onClick={(e) => e.stopPropagation()}>
+                          <CardEvento
+                            evento={evento}
+                            onClick={() => onAbrirModalEditar(evento)}
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      <div className={styles.emptySlotArea}></div> // Área vazia, pode ser estilizada para feedback visual
+                    )}
                   </div>
                 );
               })}

@@ -1,0 +1,138 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    /* Um pouco mais escuro para melhor contraste */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    /* Garante que o modal fique sobre outros elementos */
+}
+
+.modalContent {
+    background-color: #fff;
+    padding: 30px;
+    /* Aumentar padding */
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    min-width: 320px;
+    max-width: 500px;
+    position: relative;
+    box-sizing: border-box;
+    color: #333;
+}
+
+.modalContent h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #084cf4;
+    text-align: center;
+    /* Centralizar título */
+    /* Cor correspondente à navbar */
+}
+
+.closeButton {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    font-size: 1.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: #888;
+    /* Cor mais suave */
+    line-height: 1;
+    /* Alinhar melhor o 'x' */
+    padding: 0;
+}
+
+.closeButton:hover {
+    color: #333;
+
+}
+
+.formGroup {
+    margin-bottom: 20px;
+    /* Aumentar espaçamento entre grupos */
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+    font-size: 0.9rem;
+
+}
+
+.formGroup input {
+    width: 100%;
+    /* Ajusta para padding interno */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    /* Importante para width 100% funcionar bem com padding */
+
+}
+
+.formGroup input:focus {
+    border-color: #084cf4;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(8, 76, 244, 0.2);
+}
+
+.saveButton {
+    background-color: #084cf4;
+    /* Cor principal */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 15px;
+    /* Aumentar margem superior */
+    width: 100%;
+    /* Botão com largura total */
+    transition: background-color 0.2s ease-in-out;
+    /* Transição suave */
+}
+
+.saveButton:hover {
+    background-color: #0038c1;
+    /* Um tom mais escuro para hover */
+}
+
+.passwordInputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInputContainer input {
+  padding-right: 70px; /* Espaço para o botão de mostrar/ocultar */
+}
+
+.togglePasswordButton {
+  position: absolute;
+  right: 1px; /* Ajustar para ficar dentro da borda do input */
+  top: 1px;
+  bottom: 1px;
+  background-color: transparent;
+  border: none;
+  padding: 0 10px;
+  cursor: pointer;
+  color: #084cf4;
+  font-size: 0.85rem;
+}
+
+.togglePasswordButton:hover {
+  text-decoration: underline;
+}

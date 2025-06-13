@@ -1,0 +1,203 @@
+/* src/components/EditarEventoModal/EditarEventoModal.module.css */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* Overlay escuro semi-transparente ainda é bom para focar no modal */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: #ffffff; /* Fundo branco para o modal */
+  padding: 25px 30px;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15); /* Sombra mais suave para tema claro */
+  width: 90%;
+  max-width: 550px;
+  color: #333333; /* Cor de texto principal escura */
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 1.8em;
+  color: #084cf4; /* Azul da navbar para o título do modal */
+  text-align: center;
+  font-weight: 500;
+}
+
+.formGroup {
+  margin-bottom: 18px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  font-size: 0.95em;
+  color: #555555; /* Cinza escuro para os labels */
+}
+
+.formGroup input[type="text"],
+.formGroup input[type="time"],
+.formGroup input[type="color"],
+.formGroup textarea,
+.formGroup select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ced4da; /* Borda cinza claro padrão */
+  border-radius: 5px;
+  background-color: #ffffff; /* Fundo branco para os inputs */
+  color: #333333; /* Texto escuro nos inputs */
+  font-size: 1em;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.formGroup input[type="text"]:focus,
+.formGroup input[type="time"]:focus,
+.formGroup input[type="color"]:focus,
+.formGroup textarea:focus,
+.formGroup select:focus {
+  outline: none;
+  border-color: #084cf4; /* Azul da navbar para a borda no foco */
+  box-shadow: 0 0 0 0.2rem rgba(8, 76, 244, 0.25); /* Sombra de foco no tom azul */
+}
+
+.formGroup textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.formRow {
+  display: flex;
+  gap: 15px;
+}
+.formRow > .formGroup {
+  flex: 1;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 15px;
+  background-color: #f8f9fa;
+  padding: 12px 15px;
+  border-radius: 5px;
+  border: 1px solid #dee2e6;
+}
+
+.checkboxLabel {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative; /* Adicionado para posicionar o texto corretamente se necessário */
+}
+
+/* Esconde o input checkbox original */
+.hiddenCheckbox {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+  margin: 0;
+}
+
+/* O span que vai parecer o nosso checkbox customizado (a caixa) */
+.customCheckbox {
+  width: 20px;  /* Tamanho da caixa */
+  height: 20px; /* Tamanho da caixa */
+  border: 2px solid #adb5bd; /* Cor da borda da caixa não marcada */
+  border-radius: 6px; /* <<< SEU ARREDONDAMENTO AQUI! Aumente para mais redondo (ex: 10px), diminua para menos. */
+  background-color: #fff; /* Fundo da caixa não marcada */
+  margin-right: 8px; /* Espaço entre a caixa e o texto */
+  display: inline-flex; /* Para centralizar o ícone de check dentro dele */
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  flex-shrink: 0; /* Impede que a caixa encolha se o texto for longo */
+}
+
+/* Estilo da caixa quando o checkbox original está marcado */
+.hiddenCheckbox:checked + .customCheckbox {
+  background-color: #084cf4; /* Azul da navbar para o fundo da caixa marcada */
+  border-color: #084cf4;     /* Azul da navbar para a borda da caixa marcada */
+}
+
+/* Estilo para o ícone de "check" (do react-icons) */
+.checkIcon {
+  color: white;       /* Cor do ícone de check */
+  font-size: 14px;    /* Tamanho do ícone de check, ajuste conforme o ícone escolhido */
+  display: block;     /* Para garantir que o ícone seja renderizado corretamente */
+}
+
+/* Estilo para o texto ao lado do checkbox */
+.checkboxText {
+  color: #333333;
+  font-size: 0.9em;
+  -webkit-user-select: none; /* Para Safari e navegadores baseados em WebKit */
+  -moz-user-select: none;    /* Para Firefox (opcional, pois o padrão é bem suportado) */
+  -ms-user-select: none;     /* Para IE e Edge legado (opcional) */
+  user-select: none;         /* Padrão, por último */
+}
+
+/* Estilo de foco para acessibilidade (aplicado ao customCheckbox quando o input escondido está focado) */
+.hiddenCheckbox:focus-visible + .customCheckbox {
+  box-shadow: 0 0 0 2px rgba(8, 76, 244, 0.3); /* Anel de foco azul */
+}
+
+.colorPicker {
+  height: 40px;
+  padding: 2px !important;
+  border-radius: 5px; /* Para consistência com outros inputs */
+  border: 1px solid #ced4da;
+}
+.colorPicker:focus { /* Estilo de foco para o color picker, se aplicável pelo navegador */
+    border-color: #084cf4;
+    box-shadow: 0 0 0 0.2rem rgba(8, 76, 244, 0.25);
+}
+
+
+.buttonGroup {
+  margin-top: 25px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+  /* Cor do texto será definida por botões específicos */
+}
+
+.button:hover {
+  opacity: 0.85;
+}
+
+.saveButton {
+  background-color: #084cf4; /* Azul da navbar para Salvar */
+  color: white;
+}
+
+.cancelButton {
+  background-color: #f8f9fa; /* Fundo cinza bem claro */
+  color: #333333;        /* Texto escuro */
+  border: 1px solid #ced4da; /* Borda sutil */
+}
+.cancelButton:hover {
+  background-color: #e9ecef; /* Um pouco mais escuro no hover */
+  opacity: 1; /* Resetar opacity se .button:hover for muito genérico */
+}
